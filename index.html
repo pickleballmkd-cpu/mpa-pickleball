@@ -184,7 +184,8 @@
 
 
   /* MOBILE BOTTOM TABS */
-  .mobile-tabs { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--dark2); border-top: 1px solid var(--border); z-index: 99; padding: 6px 0 8px; }
+  .mobile-tabs { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--dark2); border-top: 1px solid var(--border); z-index: 99; padding: 6px 0 env(safe-area-inset-bottom, 8px); }
+  .mobile-tabs-inner { display: flex; width: 100%; }
   .mobile-tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; color: var(--muted); font-family: "DM Sans", sans-serif; font-size: 10px; cursor: pointer; padding: 4px 0; transition: color 0.15s; }
   .mobile-tab.active { color: var(--yellow); }
   .mobile-tab-icon { font-size: 18px; line-height: 1; }
@@ -208,7 +209,8 @@
   ::-webkit-scrollbar { width: 4px; }
 
   /* MOBILE BOTTOM TABS */
-  .mobile-tabs { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--dark2); border-top: 1px solid var(--border); z-index: 99; padding: 6px 0 8px; }
+  .mobile-tabs { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--dark2); border-top: 1px solid var(--border); z-index: 99; padding: 6px 0 env(safe-area-inset-bottom, 8px); }
+  .mobile-tabs-inner { display: flex; width: 100%; }
   .mobile-tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; color: var(--muted); font-family: "DM Sans", sans-serif; font-size: 10px; cursor: pointer; padding: 4px 0; transition: color 0.15s; }
   .mobile-tab.active { color: var(--yellow); }
   .mobile-tab-icon { font-size: 18px; line-height: 1; }
@@ -232,7 +234,8 @@
   ::-webkit-scrollbar-track { background: var(--dark); }
 
   /* MOBILE BOTTOM TABS */
-  .mobile-tabs { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--dark2); border-top: 1px solid var(--border); z-index: 99; padding: 6px 0 8px; }
+  .mobile-tabs { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--dark2); border-top: 1px solid var(--border); z-index: 99; padding: 6px 0 env(safe-area-inset-bottom, 8px); }
+  .mobile-tabs-inner { display: flex; width: 100%; }
   .mobile-tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; color: var(--muted); font-family: "DM Sans", sans-serif; font-size: 10px; cursor: pointer; padding: 4px 0; transition: color 0.15s; }
   .mobile-tab.active { color: var(--yellow); }
   .mobile-tab-icon { font-size: 18px; line-height: 1; }
@@ -558,6 +561,7 @@
 </div>
 
 <div class="mobile-tabs" id="mobileTabs">
+  <div class="mobile-tabs-inner">
   <button class="mobile-tab active" onclick="switchView('calendar',this);syncMobile(0)">
     <span class="mobile-tab-icon">📅</span>
     <span class="t-mk">Термини</span><span class="t-en">Schedule</span>
@@ -574,6 +578,7 @@
     <span class="mobile-tab-icon">⚙️</span>
     <span class="t-mk">Админ</span><span class="t-en">Admin</span>
   </button>
+  </div>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -599,7 +604,18 @@ async function init() {
   const { data: { session } } = await sb.auth.getSession();
   if (session) { currentUser = session.user; showAdminControls(); }
   sb.auth.onAuthStateChange((_e, session) => {
-    if (session) { currentUser = session.user; showAdminControls(); closeLoginModal(); }
+    if (session) {
+      currentUser = session.user;
+      showAdminControls();
+      closeLoginModal();
+      // On mobile PWA, switch to admin view after login
+      if (window.innerWidth <= 640 && window.matchMedia('(display-mode: standalone)').matches) {
+        setTimeout(() => {
+          switchView('admin', document.getElementById('adminTab'));
+          syncMobile(3);
+        }, 300);
+      }
+    }
     else { currentUser = null; hideAdminControls(); }
   });
   loadAll();
@@ -609,10 +625,23 @@ function showAdminControls() {
   document.getElementById('adminTab').style.display = 'inline-flex';
   document.getElementById('logoutBtn').style.display = 'inline-flex';
   document.getElementById('adminLoginBtn').style.display = 'none';
+  // Show mobile admin tab and mobile tabs bar
   var mat = document.getElementById('mobileAdminTab');
   if (mat) mat.style.display = 'flex';
+  var mt = document.getElementById('mobileTabs');
+  if (mt && window.innerWidth <= 480) mt.style.display = 'block';
+  renderAdminIfNeeded();
+}
+function renderAdminIfNeeded() {
+  if (currentUser && allPlayers.length >= 0) {
+    renderAdminPlayers();
+    renderLocationsAdmin();
+    populateSelects();
+  }
 }
 function hideAdminControls() {
+  var mat2 = document.getElementById('mobileAdminTab');
+  if (mat2) mat2.style.display = 'none';
   document.getElementById('adminTab').style.display = 'none';
   document.getElementById('logoutBtn').style.display = 'none';
   document.getElementById('adminLoginBtn').style.display = 'inline-flex';
@@ -1030,6 +1059,19 @@ async function deleteSession(sid){
   showToast(currentLang==='mk'?'Терминот е избришан.':'Session deleted.','success');
   await loadSessions();await loadRegistrations();renderSessions();renderTournaments();loadStats();populateSelects();
 }
+// Show mobile tabs on all mobile screens
+function setupMobileTabs() {
+  var mt = document.getElementById('mobileTabs');
+  if (!mt) return;
+  if (window.innerWidth <= 640) {
+    mt.style.display = 'block'; // outer container
+    document.querySelector('.main').style.paddingBottom = '80px';
+  } else {
+    mt.style.display = 'none';
+  }
+}
+window.addEventListener('resize', setupMobileTabs);
+setupMobileTabs();
 init();
 </script>
 </body>
