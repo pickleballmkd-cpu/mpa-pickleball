@@ -601,44 +601,64 @@ const MONTHS_SHORT_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','
 
 // ===== INIT =====
 async function init() {
+  // Check existing session (e.g. PWA reopened while logged in)
   const { data: { session } } = await sb.auth.getSession();
-  if (session) { currentUser = session.user; showAdminControls(); }
-  sb.auth.onAuthStateChange((_e, session) => {
+  if (session) {
+    currentUser = session.user;
+  }
+
+  // Load all data first
+  await loadAll();
+
+  // NOW show admin controls if logged in
+  if (currentUser) {
+    showAdminControls();
+    // On mobile, auto-navigate to admin
+    if (window.innerWidth <= 640) {
+      setTimeout(() => {
+        switchView('admin', document.getElementById('adminTab'));
+        syncMobile(3);
+      }, 200);
+    }
+  }
+
+  // Listen for login/logout
+  sb.auth.onAuthStateChange(async (_e, session) => {
     if (session) {
       currentUser = session.user;
       showAdminControls();
       closeLoginModal();
-      // On mobile PWA, switch to admin view after login
-      if (window.innerWidth <= 640 && window.matchMedia('(display-mode: standalone)').matches) {
+      // Reload admin data
+      await loadPlayers();
+      await loadLocations();
+      await loadSessions();
+      await loadRegistrations();
+      renderAdminPlayers();
+      renderLocationsAdmin();
+      populateSelects();
+      // On mobile, navigate to admin
+      if (window.innerWidth <= 640) {
         setTimeout(() => {
           switchView('admin', document.getElementById('adminTab'));
           syncMobile(3);
-        }, 300);
+        }, 200);
       }
+    } else {
+      currentUser = null;
+      hideAdminControls();
     }
-    else { currentUser = null; hideAdminControls(); }
   });
-  loadAll();
 }
 
 function showAdminControls() {
   document.getElementById('adminTab').style.display = 'inline-flex';
   document.getElementById('logoutBtn').style.display = 'inline-flex';
   document.getElementById('adminLoginBtn').style.display = 'none';
-  // Show mobile admin tab and mobile tabs bar
   var mat = document.getElementById('mobileAdminTab');
   if (mat) mat.style.display = 'flex';
-  var mt = document.getElementById('mobileTabs');
-  if (mt && window.innerWidth <= 480) mt.style.display = 'block';
-  renderAdminIfNeeded();
+  setupMobileTabs();
 }
-function renderAdminIfNeeded() {
-  if (currentUser && allPlayers.length >= 0) {
-    renderAdminPlayers();
-    renderLocationsAdmin();
-    populateSelects();
-  }
-}
+
 function hideAdminControls() {
   var mat2 = document.getElementById('mobileAdminTab');
   if (mat2) mat2.style.display = 'none';
