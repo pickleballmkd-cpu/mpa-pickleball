@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="mk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MPA Skopje — Macedonian Pickleball Association</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --red: #CC1F1F; --red2: #A01515;
+    --yellow: #F5C200; --yellow2: #D4A800;
+    --dark: #100A0A; --dark2: #1A0F0F; --dark3: #241515;
+    --card: #1E1010;
+    --border: rgba(245,194,0,0.18); --border-red: rgba(204,31,31,0.25);
+    --text: #F5EFE0; --muted: #9A8070;
+    --success: #4ABA6A; --blue: #4A9CF0; --full: #FF5C5C;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--dark); color: var(--text); min-height: 100vh; font-size: 14px; }
+
+  .nav { display: flex; align-items: center; justify-content: space-between; padding: 0 20px; height: 64px; background: var(--dark2); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; gap: 12px; }
+  .nav-brand { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .nav-logo { width: 46px; height: 46px; object-fit: contain; border-radius: 4px; }
+  .nav-title { display: flex; flex-direction: column; line-height: 1.15; }
+  .nav-title-top { font-family: 'Bebas Neue', sans-serif; font-size: 10px; letter-spacing: 2.5px; color: var(--yellow); opacity: 0.75; }
+  .nav-title-main { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 1.5px; color: var(--text); }
+  .nav-title-main span { color: var(--yellow); }
+  .nav-center { display: flex; gap: 2px; }
+  .nav-tab { padding: 6px 12px; border-radius: 6px; border: none; background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .nav-tab:hover { color: var(--text); background: var(--dark3); }
+  .nav-tab.active { color: var(--yellow); background: rgba(245,194,0,0.1); }
+  .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .lang-btn { padding: 4px 9px; border-radius: 5px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 11px; cursor: pointer; transition: all 0.15s; }
+  .lang-btn.active { background: rgba(245,194,0,0.12); color: var(--yellow); border-color: rgba(245,194,0,0.35); }
+  .season-badge { background: var(--dark3); border: 1px solid var(--border-red); border-radius: 6px; padding: 4px 10px; font-size: 11px; color: var(--muted); }
+
+  .main { padding: 24px 20px; max-width: 960px; margin: 0 auto; }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .t-mk { display: inline; } .t-en { display: none; }
+  body.lang-en .t-mk { display: none; } body.lang-en .t-en { display: inline; }
+
+  .page-title { font-family: 'Bebas Neue', sans-serif; font-size: 34px; letter-spacing: 1px; line-height: 1; }
+  .page-sub { color: var(--muted); font-size: 12px; margin-top: 5px; }
+  .page-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+
+  .btn { padding: 8px 16px; border-radius: 7px; border: none; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-yellow { background: var(--yellow); color: var(--dark); }
+  .btn-yellow:hover:not(:disabled) { background: var(--yellow2); }
+  .btn-red { background: var(--red); color: #fff; }
+  .btn-red:hover:not(:disabled) { background: var(--red2); }
+  .btn-ghost { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover:not(:disabled) { border-color: rgba(245,194,0,0.4); }
+  .btn-sm { padding: 5px 11px; font-size: 12px; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 24px; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .stat-val { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--yellow); line-height: 1; }
+  .stat-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.4px; flex-shrink: 0; }
+  .badge-open { background: rgba(74,186,106,0.15); color: var(--success); }
+  .badge-full { background: rgba(255,92,92,0.15); color: var(--full); }
+  .badge-tournament { background: rgba(74,156,240,0.15); color: var(--blue); }
+
+  .cal-grid { display: grid; gap: 10px; }
+  .session-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; display: flex; align-items: center; gap: 14px; transition: border-color 0.15s; }
+  .session-card:hover { border-color: rgba(245,194,0,0.3); }
+  .session-date { text-align: center; min-width: 46px; background: var(--dark3); border-radius: 8px; padding: 8px 6px; border: 1px solid var(--border-red); flex-shrink: 0; }
+  .date-day { font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: var(--yellow); line-height: 1; }
+  .date-mon { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .session-info { flex: 1; min-width: 0; }
+  .session-name { font-weight: 500; font-size: 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .session-meta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 5px; }
+  .meta-item { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 4px; }
+  .meta-loc { font-size: 12px; color: var(--yellow); opacity: 0.8; }
+  .meta-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--yellow); }
+  .meta-dot.red { background: var(--full); }
+  .meta-dot.blue { background: var(--blue); }
+  .session-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .spots-num { font-family: 'Bebas Neue', sans-serif; font-size: 20px; line-height: 1; text-align: center; }
+  .spots-num.good { color: var(--success); }
+  .spots-num.low { color: var(--full); }
+  .spots-label { font-size: 10px; color: var(--muted); text-align: center; }
+
+  .lb-table { width: 100%; border-collapse: collapse; }
+  .lb-table th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); padding: 0 12px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .lb-table th:nth-child(n+3) { text-align: right; }
+  .lb-table td { padding: 12px; vertical-align: middle; }
+  .lb-table td:nth-child(n+3) { text-align: right; }
+  .lb-row { border-bottom: 1px solid rgba(245,194,0,0.06); transition: background 0.1s; }
+  .lb-row:hover { background: rgba(245,194,0,0.04); }
+  .rank-num { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--muted); }
+  .rank-gold { color: var(--yellow); }
+  .rank-bronze { color: #CD7F32; }
+  .player-name { font-weight: 500; font-size: 14px; }
+  .player-sub { font-size: 11px; color: var(--muted); }
+  .dupr-score { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--yellow); }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; background: rgba(245,194,0,0.15); color: var(--yellow); }
+
+  .t-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
+  .t-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; background: rgba(204,31,31,0.06); }
+  .t-name { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.5px; }
+  .t-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .bracket { padding: 18px 20px; }
+  .round-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 8px; }
+  .match-row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; background: var(--dark3); border-radius: 8px; margin-bottom: 6px; border-left: 3px solid var(--red); }
+  .match-players { flex: 1; }
+  .match-player { font-size: 13px; padding: 2px 0; color: var(--muted); }
+  .match-player.winner { font-weight: 600; color: var(--text); }
+  .match-score { font-family: 'Bebas Neue', sans-serif; font-size: 16px; color: var(--muted); white-space: nowrap; }
+  .match-score .ws { color: var(--yellow); }
+
+  .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .admin-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; }
+  .admin-card-full { grid-column: 1 / -1; }
+  .admin-card h3 { font-size: 11px; font-weight: 500; color: var(--yellow); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+  .admin-card h3::before { content: ''; display: block; width: 3px; height: 12px; background: var(--red); border-radius: 2px; }
+  .form-group { margin-bottom: 11px; }
+  .form-label { font-size: 11px; color: var(--muted); margin-bottom: 5px; display: block; }
+  .form-input { width: 100%; background: var(--dark3); border: 1px solid var(--border); border-radius: 7px; padding: 8px 11px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; transition: border-color 0.15s; }
+  .form-input:focus { border-color: rgba(245,194,0,0.5); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+  .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+  .login-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 36px 40px; width: 100%; max-width: 380px; }
+  .login-logo { text-align: center; margin-bottom: 24px; }
+  .login-logo img { width: 80px; height: 80px; object-fit: contain; }
+  .login-title { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 1px; text-align: center; margin-bottom: 4px; }
+  .login-sub { font-size: 12px; color: var(--muted); text-align: center; margin-bottom: 24px; }
+  .login-error { background: rgba(255,92,92,0.1); border: 1px solid rgba(255,92,92,0.3); border-radius: 7px; padding: 10px 14px; font-size: 13px; color: var(--full); margin-bottom: 14px; display: none; }
+
+  .divider { height: 1px; background: var(--border); margin: 16px 0; }
+  .empty-state { text-align: center; padding: 48px 20px; color: var(--muted); font-size: 14px; }
+  .loading { text-align: center; padding: 32px; color: var(--muted); font-size: 13px; }
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--dark2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 18px; font-size: 13px; z-index: 9999; opacity: 0; transition: opacity 0.3s; pointer-events: none; max-width: 320px; }
+  .toast.show { opacity: 1; }
+  .toast.success { border-color: rgba(74,186,106,0.4); color: var(--success); }
+  .toast.error { border-color: rgba(255,92,92,0.4); color: var(--full); }
+
+  .loc-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--dark3); border: 1px solid var(--border-red); border-radius: 20px; padding: 4px 10px 4px 8px; font-size: 12px; color: var(--text); margin: 3px; }
+  .loc-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); flex-shrink: 0; }
+  .loc-remove { color: var(--muted); cursor: pointer; font-size: 16px; line-height: 1; margin-left: 2px; }
+  .loc-remove:hover { color: var(--full); }
+
+  .players-list { display: grid; gap: 8px; }
+  .player-row { background: var(--dark3); border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 12px; }
+  .player-row-info { flex: 1; }
+  .player-row-name { font-weight: 500; font-size: 14px; }
+  .player-row-sub { font-size: 11px; color: var(--muted); }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--dark); }
+  ::-webkit-scrollbar-thumb { background: var(--dark3); border-radius: 2px; }
+
+  @media (max-width: 640px) {
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .admin-grid { grid-template-columns: 1fr; }
+    .admin-card-full { grid-column: 1; }
+    .form-row-3 { grid-template-columns: 1fr; }
+    .nav-center .nav-tab span.t-mk, .nav-center .nav-tab span.t-en { display: none; }
+  }
+</style>
+</head>
+<body class="lang-mk">
+
+<!-- LOGIN -->
+<div id="page-login" class="login-wrap" style="display:none;">
+  <div class="login-card">
+    <div class="login-logo">
+      <img src="logo.png" alt="MPA" onerror="this.style.display='none'">
+    </div>
+    <div class="login-title">MPA ADMIN</div>
+    <div class="login-sub">Macedonian Pickleball Association — Skopje</div>
+    <div class="login-error" id="loginError"></div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input class="form-input" type="email" id="loginEmail" placeholder="admin@mpa.mk" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="form-group">
+      <label class="form-label"><span class="t-mk">Лозинка</span><span class="t-en">Password</span></label>
+      <input class="form-input" type="password" id="loginPassword" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn btn-yellow" style="width:100%;justify-content:center;margin-top:8px;" onclick="doLogin()">
+      <span class="t-mk">Најави се</span><span class="t-en">Sign in</span>
+    </button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="page-app" style="display:none;">
+<nav class="nav">
+  <div class="nav-brand">
+    <img class="nav-logo" src="logo.png" alt="MPA" onerror="this.style.display='none'">
+    <div class="nav-title">
+      <div class="nav-title-top">Macedonian Pickleball</div>
+      <div class="nav-title-main">MPA <span>SKOPJE</span></div>
+    </div>
+  </div>
+  <div class="nav-center">
+    <button class="nav-tab active" onclick="switchView('calendar',this)"><span class="t-mk">Термини</span><span class="t-en">Schedule</span></button>
+    <button class="nav-tab" onclick="switchView('leaderboard',this)"><span class="t-mk">Рангирање</span><span class="t-en">Rankings</span></button>
+    <button class="nav-tab" onclick="switchView('tournaments',this)"><span class="t-mk">Турнири</span><span class="t-en">Tournaments</span></button>
+    <button class="nav-tab" id="adminTab" onclick="switchView('admin',this)" style="display:none;">⚙ <span class="t-mk">Админ</span><span class="t-en">Admin</span></button>
+  </div>
+  <div class="nav-right">
+    <button class="lang-btn active" id="btn-mk" onclick="setLang('mk')">МК</button>
+    <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+    <div class="season-badge"><span class="t-mk">Сезона 2026</span><span class="t-en">Season 2026</span></div>
+    <button class="btn btn-ghost btn-sm" id="logoutBtn" onclick="doLogout()" style="display:none;"><span class="t-mk">Одјави</span><span class="t-en">Logout</span></button>
+  </div>
+</nav>
+
+<div class="main">
+
+  <!-- CALENDAR VIEW -->
+  <div class="view active" id="view-calendar">
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label"><span class="t-mk">Активни играчи</span><span class="t-en">Active players</span></div>
+        <div class="stat-val" id="statPlayers">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label"><span class="t-mk">Термини овој месец</span><span class="t-en">Sessions this month</span></div>
+        <div class="stat-val" id="statSessions">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label"><span class="t-mk">Турнири 2026</span><span class="t-en">Tournaments 2026</span></div>
+        <div class="stat-val" id="statTournaments">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label"><span class="t-mk">Одиграни мечови</span><span class="t-en">Matches played</span></div>
+        <div class="stat-val" id="statMatches">—</div>
+      </div>
+    </div>
+    <div class="page-header">
+      <div>
+        <div class="page-title"><span class="t-mk">Календар</span><span class="t-en">Calendar</span></div>
+        <div class="page-sub" id="calSubtitle"></div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-ghost btn-sm" onclick="changeMonth(-1)">◀</button>
+        <button class="btn btn-ghost btn-sm" onclick="changeMonth(1)">▶</button>
+      </div>
+    </div>
+    <div class="cal-grid" id="sessionsList"><div class="loading">...</div></div>
+  </div>
+
+  <!-- LEADERBOARD VIEW -->
+  <div class="view" id="view-leaderboard">
+    <div class="page-header">
+      <div>
+        <div class="page-title"><span class="t-mk">Рангирање</span><span class="t-en">Rankings</span></div>
+        <div class="page-sub"><span class="t-mk">DUPR систем — автоматско ажурирање</span><span class="t-en">DUPR system — auto updated</span></div>
+      </div>
+    </div>
+    <div id="leaderboardContent"><div class="loading">...</div></div>
+  </div>
+
+  <!-- TOURNAMENTS VIEW -->
+  <div class="view" id="view-tournaments">
+    <div class="page-header">
+      <div>
+        <div class="page-title"><span class="t-mk">Турнири</span><span class="t-en">Tournaments</span></div>
+        <div class="page-sub"><span class="t-mk">Резултати и мечови</span><span class="t-en">Results & matches</span></div>
+      </div>
+    </div>
+    <div id="tournamentsList"><div class="loading">...</div></div>
+  </div>
+
+  <!-- ADMIN VIEW -->
+  <div class="view" id="view-admin">
+    <div class="page-header">
+      <div>
+        <div class="page-title"><span class="t-mk">Администрација</span><span class="t-en">Administration</span></div>
+        <div class="page-sub"><span class="t-mk">Само за организатори — MPA Скопје</span><span class="t-en">Organizers only — MPA Skopje</span></div>
+      </div>
+    </div>
+    <div class="admin-grid">
+
+      <div class="admin-card">
+        <h3><span class="t-mk">Додај термин</span><span class="t-en">Add session</span></h3>
+        <div class="form-group">
+          <label class="form-label"><span class="t-mk">Назив</span><span class="t-en">Title</span></label>
+          <input class="form-input" id="sTitle" type="text" placeholder="Вечерна лига / Evening league">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label"><span class="t-mk">Датум</span><span class="t-en">Date</span></label>
+            <input class="form-input" id="sDate" type="date">
+          </div>
+          <div class="form-group">
+            <label class="form-label"><span class="t-mk">Почеток</span><span class="t-en">Start</span></label>
+            <input class="form-input" id="sStart" type="time" value="18:00">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label"><span class="t-mk">Крај</span><span class="t-en">End</span></label>
+            <input class="form-input" id="sEnd" type="time" value="21:00">
+          </div>
+          <div class="form-group">
+            <label class="form-label"><span class="t-mk">Макс. играчи</span><span class="t-en">Max players</span></label>
+            <input class="form-input" id="sMax" type="number" value="8" min="2">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label"><span class="t-mk">Локација</span><span class="t-en">Venue</span></label>
+          <select class="form-input" id="sLocation"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label"><span class="t-mk">Формат</span><span class="t-en">Format</span></label>
+          <select class="form-input" id="sFormat">
+            <option value="Doubles">Doubles</option>
+            <option value="Singles">Singles</option>
+            <option value="Mixed doubles">Mixed doubles</option>
+            <option value="Сите формати">Сите формати / All formats</option>
+          </select>
+        </div>
+        <div class="form-group" style="display:flex;align-items:center;gap:10px;">
+          <input type="checkbox" id="sIsTournament" style="accent-color:var(--yellow);width:16px;height:16px;cursor:pointer;">
+          <label for="sIsTournament" style="font-size:13px;color:var(--muted);cursor:pointer;"><span class="t-mk">Ова е турнир</span><span class="t-en">This is a tournament</span></label>
+        </div>
+        <button class="btn btn-yellow" style="width:100%;" onclick="addSession()">
+          <span class="t-mk">Зачувај термин</span><span class="t-en">Save session</span>
+        </button>
+      </div>
+
+      <div class="admin-card">
+        <h3><span class="t-mk">Внеси резултат</span><span class="t-en">Enter result</span></h3>
+        <div class="form-group">
+          <label class="form-label"><span class="t-mk">Сесија / Турнир</span><span class="t-en">Session / Tournament</span></label>
+          <select class="form-input" id="rSession"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label"><span class="t-mk">Формат на меч</span><span class="t-en">Match format</span></label>
+          <select class="form-input" id="rFormat">
+            <option value="Singles">Singles (1v1)</option>
+            <option value="Doubles">Doubles (2v2)</option>
+            <option value="Mixed">Mixed doubles</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label"><span class="t-mk">Играч 1</span><span class="t-en">Player 1</span></label>
+          <select class="form-input" id="rPlayer1"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label"><span class="t-mk">Играч 2</span><span class="t-en">Player 2</span></label>
+          <select class="form-input" id="rPlayer2"></select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label"><span class="t-mk">Резултат 1</span><span class="t-en">Score 1</span></label>
+            <input class="form-input" id="rScore1" type="number" placeholder="11" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label"><span class="t-mk">Резултат 2</span><span class="t-en">Score 2</span></label>
+            <input class="form-input" id="rScore2" type="number" placeholder="7" min="0">
+          </div>
+        </div>
+        <button class="btn btn-red" style="width:100%;" onclick="addResult()">
+          <span class="t-mk">Потврди → Ажурирај DUPR</span><span class="t-en">Confirm → Update DUPR</span>
+        </button>
+      </div>
+
+      <div class="admin-card admin-card-full">
+        <h3><span class="t-mk">Менаџирање локации</span><span class="t-en">Venue management</span></h3>
+        <div id="locationsList" style="margin-bottom:14px;"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:flex-end;">
+          <div class="form-group" style="margin:0;">
+            <label class="form-label"><span class="t-mk">Назив</span><span class="t-en">Name</span></label>
+            <input class="form-input" id="locName" type="text" placeholder="Спортски центар X">
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label class="form-label"><span class="t-mk">Адреса</span><span class="t-en">Address</span></label>
+            <input class="form-input" id="locAddress" type="text" placeholder="ул. Македонија, Скопје">
+          </div>
+          <button class="btn btn-yellow" onclick="addLocation()">+ <span class="t-mk">Додај</span><span class="t-en">Add</span></button>
+        </div>
+      </div>
+
+      <div class="admin-card admin-card-full">
+        <h3><span class="t-mk">Регистрирај играч</span><span class="t-en">Register player</span></h3>
+        <div class="form-row-3">
+          <div class="form-group" style="margin:0;">
+            <label class="form-label"><span class="t-mk">Ime и презиме</span><span class="t-en">Full name</span></label>
+            <input class="form-input" id="pName" type="text" placeholder="Марко Андоновски">
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label class="form-label"><span class="t-mk">Телефон (Вибер)</span><span class="t-en">Phone (Viber)</span></label>
+            <input class="form-input" id="pPhone" type="text" placeholder="+389 7x xxx xxx">
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label class="form-label">Email</label>
+            <input class="form-input" id="pEmail" type="email" placeholder="marko@email.com">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:140px auto;gap:8px;margin-top:8px;align-items:flex-end;">
+          <div class="form-group" style="margin:0;">
+            <label class="form-label"><span class="t-mk">Почетен DUPR</span><span class="t-en">Starting DUPR</span></label>
+            <input class="form-input" id="pDupr" type="number" placeholder="3.50" step="0.01" min="2" max="6">
+          </div>
+          <button class="btn btn-yellow" onclick="addPlayer()">+ <span class="t-mk">Регистрирај</span><span class="t-en">Register</span></button>
+        </div>
+        <div class="divider"></div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;"><span class="t-mk">Регистрирани играчи</span><span class="t-en">Registered players</span></div>
+        <div id="adminPlayersList"></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://btapuwyffybimkcswkep.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0YXB1d3lmZnliaW1rY3N3a2VwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NTY0MTgsImV4cCI6MjA4OTIzMjQxOH0.UBEl_VrcULon-mGRclINzKCDHkIBeZlM32eOOxcuzKY';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentLang = 'mk';
+let currentUser = null;
+let currentMonth = new Date().getMonth();
+let currentYear = new Date().getFullYear();
+let allPlayers = [], allLocations = [], allSessions = [];
+
+const MONTHS_MK = ['Јануари','Февруари','Март','Април','Мај','Јуни','Јули','Август','Септември','Октомври','Ноември','Декември'];
+const MONTHS_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MONTHS_SHORT_MK = ['Јан','Фев','Мар','Апр','Мај','Јун','Јул','Авг','Сеп','Окт','Ное','Дек'];
+const MONTHS_SHORT_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) { currentUser = session.user; showApp(); }
+  else { showLoginPage(); }
+  sb.auth.onAuthStateChange((_e, session) => {
+    if (session) { currentUser = session.user; showApp(); }
+    else { currentUser = null; showLoginPage(); }
+  });
+}
+
+function showApp() {
+  document.getElementById('page-login').style.display = 'none';
+  document.getElementById('page-app').style.display = 'block';
+  document.getElementById('adminTab').style.display = 'inline-flex';
+  document.getElementById('logoutBtn').style.display = 'inline-flex';
+  loadAll();
+}
+
+function showLoginPage() {
+  document.getElementById('page-login').style.display = 'flex';
+  document.getElementById('page-app').style.display = 'none';
+}
+
+async function loadAll() {
+  await Promise.all([loadPlayers(), loadLocations(), loadSessions()]);
+  loadStats();
+  renderSessions();
+  renderLeaderboard();
+  renderTournaments();
+  renderAdminPlayers();
+  renderLocationsAdmin();
+  populateSelects();
+}
+
+// AUTH
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) { errEl.textContent = currentLang==='mk' ? 'Погрешен email или лозинка.' : 'Invalid email or password.'; errEl.style.display = 'block'; }
+}
+async function doLogout() { await sb.auth.signOut(); }
+
+// STATS
+async function loadStats() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth()+1).padStart(2,'0');
+  const [p,s,t,mc] = await Promise.all([
+    sb.from('players').select('*',{count:'exact',head:true}).eq('active',true),
+    sb.from('sessions').select('*',{count:'exact',head:true}).gte('date',`${y}-${m}-01`).lte('date',`${y}-${m}-31`),
+    sb.from('sessions').select('*',{count:'exact',head:true}).eq('is_tournament',true),
+    sb.from('matches').select('*',{count:'exact',head:true})
+  ]);
+  document.getElementById('statPlayers').textContent = p.count ?? 0;
+  document.getElementById('statSessions').textContent = s.count ?? 0;
+  document.getElementById('statTournaments').textContent = t.count ?? 0;
+  document.getElementById('statMatches').textContent = mc.count ?? 0;
+}
+
+// SESSIONS
+async function loadSessions() {
+  const { data } = await sb.from('sessions').select('*, locations(name,address)').order('date',{ascending:true});
+  allSessions = data || [];
+}
+
+function renderSessions() {
+  document.getElementById('calSubtitle').innerHTML =
+    `<span class="t-mk">${MONTHS_MK[currentMonth]} ${currentYear}</span><span class="t-en">${MONTHS_EN[currentMonth]} ${currentYear}</span>`;
+  const filtered = allSessions.filter(s => {
+    const d = new Date(s.date+'T00:00:00');
+    return d.getMonth()===currentMonth && d.getFullYear()===currentYear;
+  });
+  const el = document.getElementById('sessionsList');
+  if (!filtered.length) {
+    el.innerHTML = `<div class="empty-state"><span class="t-mk">Нема термини овој месец.</span><span class="t-en">No sessions this month.</span></div>`;
+    applyLang(); return;
+  }
+  el.innerHTML = filtered.map(s => {
+    const d = new Date(s.date+'T00:00:00');
+    const day = d.getDate();
+    const monMk = MONTHS_SHORT_MK[d.getMonth()];
+    const monEn = MONTHS_SHORT_EN[d.getMonth()];
+    const locName = s.locations ? s.locations.name : '';
+    const badgeHtml = s.is_tournament
+      ? `<span class="badge badge-tournament"><span class="t-mk">Турнир</span><span class="t-en">Tournament</span></span>`
+      : `<span class="badge badge-open"><span class="t-mk">Отворено</span><span class="t-en">Open</span></span>`;
+    const dotClass = s.is_tournament ? 'blue' : '';
+    const btnHtml = currentUser
+      ? `<button class="btn btn-yellow btn-sm"><span class="t-mk">Пријави се</span><span class="t-en">Sign up</span></button>` : '';
+    return `<div class="session-card">
+      <div class="session-date"><div class="date-day">${day}</div><div class="date-mon"><span class="t-mk">${monMk}</span><span class="t-en">${monEn}</span></div></div>
+      <div class="session-info">
+        <div class="session-name">${s.title} ${badgeHtml}</div>
+        <div class="session-meta">
+          <div class="meta-item"><div class="meta-dot ${dotClass}"></div>${s.time_start.slice(0,5)} – ${s.time_end.slice(0,5)}</div>
+          <div class="meta-item">${s.format}</div>
+          ${locName ? `<div class="meta-loc">📍 ${locName}</div>` : ''}
+        </div>
+      </div>
+      <div class="session-right">
+        <div><div class="spots-num good">${s.max_players}</div><div class="spots-label"><span class="t-mk">места</span><span class="t-en">spots</span></div></div>
+        ${btnHtml}
+      </div>
+    </div>`;
+  }).join('');
+  applyLang();
+}
+
+function changeMonth(dir) {
+  currentMonth += dir;
+  if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+  if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+  renderSessions();
+}
+
+// LEADERBOARD
+async function loadPlayers() {
+  const { data } = await sb.from('players').select('*').eq('active',true).order('dupr_rating',{ascending:false});
+  allPlayers = data || [];
+}
+
+function renderLeaderboard() {
+  const el = document.getElementById('leaderboardContent');
+  if (!allPlayers.length) {
+    el.innerHTML = `<div class="empty-state"><span class="t-mk">Нема регистрирани играчи.</span><span class="t-en">No players registered.</span></div>`;
+    applyLang(); return;
+  }
+  const rows = allPlayers.map((p,i) => {
+    const initials = p.full_name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+    const rankClass = i===0 ? 'rank-gold' : i<=2 ? 'rank-bronze' : '';
+    const total = (p.wins||0)+(p.losses||0);
+    return `<tr class="lb-row">
+      <td><span class="rank-num ${rankClass}">${i+1}</span></td>
+      <td><div style="display:flex;align-items:center;gap:10px;">
+        <div class="avatar">${initials}</div>
+        <div><div class="player-name">${p.full_name}</div><div class="player-sub">${total} <span class="t-mk">мечови</span><span class="t-en">matches</span></div></div>
+      </div></td>
+      <td><div class="dupr-score">${parseFloat(p.dupr_rating).toFixed(2)}</div></td>
+      <td><span style="color:var(--text);font-weight:500;">${p.wins||0}</span> / <span style="color:var(--full);">${p.losses||0}</span></td>
+      <td style="color:var(--muted);font-size:13px;">${total}</td>
+    </tr>`;
+  }).join('');
+  el.innerHTML = `<table class="lb-table">
+    <thead><tr>
+      <th>#</th>
+      <th><span class="t-mk">Играч</span><span class="t-en">Player</span></th>
+      <th>DUPR</th>
+      <th><span class="t-mk">В / П</span><span class="t-en">W / L</span></th>
+      <th><span class="t-mk">Вкупно</span><span class="t-en">Total</span></th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+  applyLang();
+}
+
+// TOURNAMENTS
+async function renderTournaments() {
+  const { data: matches } = await sb.from('matches')
+    .select('*, player1:players!matches_player1_id_fkey(full_name), player2:players!matches_player2_id_fkey(full_name)')
+    .order('played_at',{ascending:false});
+  const el = document.getElementById('tournamentsList');
+  const tSessions = allSessions.filter(s => s.is_tournament);
+  if (!tSessions.length) {
+    el.innerHTML = `<div class="empty-state"><span class="t-mk">Нема турнири.</span><span class="t-en">No tournaments yet.</span></div>`;
+    applyLang(); return;
+  }
+  el.innerHTML = tSessions.map(ts => {
+    const d = new Date(ts.date+'T00:00:00');
+    const dateStr = `${d.getDate()} ${MONTHS_MK[d.getMonth()]} ${d.getFullYear()}`;
+    const dateStrEn = `${MONTHS_EN[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+    const locName = ts.locations?.name || '';
+    const tsMatches = (matches||[]).filter(m => m.session_id===ts.id);
+    const matchRows = tsMatches.length
+      ? tsMatches.map(m => {
+          const s1win = m.score1 > m.score2;
+          return `<div class="match-row">
+            <div class="match-players">
+              <div class="match-player ${s1win?'winner':''}">${m.player1?.full_name||'—'}</div>
+              <div class="match-player ${!s1win?'winner':''}">${m.player2?.full_name||'—'}</div>
+            </div>
+            <div class="match-score"><span class="${s1win?'ws':''}">${m.score1}</span> – <span class="${!s1win?'ws':''}">${m.score2}</span></div>
+          </div>`;
+        }).join('')
+      : `<div class="empty-state" style="padding:16px;font-size:13px;"><span class="t-mk">Нема внесени резултати.</span><span class="t-en">No results entered yet.</span></div>`;
+    return `<div class="t-card">
+      <div class="t-header">
+        <div>
+          <div class="t-name">${ts.title}</div>
+          <div class="t-meta"><span class="t-mk">${dateStr}</span><span class="t-en">${dateStrEn}</span> · ${ts.format}${locName?' · 📍 '+locName:''}</div>
+        </div>
+        <span class="badge badge-tournament"><span class="t-mk">Турнир</span><span class="t-en">Tournament</span></span>
+      </div>
+      <div class="bracket">
+        <div class="round-label"><span class="t-mk">Мечови</span><span class="t-en">Matches</span></div>
+        ${matchRows}
+      </div>
+    </div>`;
+  }).join('');
+  applyLang();
+}
+
+// ADMIN — SESSION
+async function addSession() {
+  const title = document.getElementById('sTitle').value.trim();
+  const date = document.getElementById('sDate').value;
+  const start = document.getElementById('sStart').value;
+  const end = document.getElementById('sEnd').value;
+  const max = parseInt(document.getElementById('sMax').value)||8;
+  const locId = document.getElementById('sLocation').value||null;
+  const format = document.getElementById('sFormat').value;
+  const isTournament = document.getElementById('sIsTournament').checked;
+  if (!title||!date||!start||!end) { showToast(currentLang==='mk'?'Пополни ги задолжителните полиња.':'Fill in required fields.','error'); return; }
+  const { error } = await sb.from('sessions').insert({ title, date, time_start:start, time_end:end, max_players:max, location_id:locId, format, is_tournament:isTournament });
+  if (error) { showToast('Error: '+error.message,'error'); return; }
+  showToast(currentLang==='mk'?'Терминот е зачуван!':'Session saved!','success');
+  document.getElementById('sTitle').value=''; document.getElementById('sDate').value='';
+  await loadSessions(); renderSessions(); renderTournaments(); loadStats(); populateSelects();
+}
+
+// ADMIN — RESULT
+async function addResult() {
+  const sessionId = document.getElementById('rSession').value;
+  const p1Id = document.getElementById('rPlayer1').value;
+  const p2Id = document.getElementById('rPlayer2').value;
+  const score1 = parseInt(document.getElementById('rScore1').value);
+  const score2 = parseInt(document.getElementById('rScore2').value);
+  const format = document.getElementById('rFormat').value;
+  if (!sessionId||!p1Id||!p2Id||isNaN(score1)||isNaN(score2)) { showToast(currentLang==='mk'?'Пополни ги сите полиња.':'Fill in all fields.','error'); return; }
+  if (p1Id===p2Id) { showToast(currentLang==='mk'?'Играчите мора да бидат различни.':'Players must be different.','error'); return; }
+  const { error } = await sb.from('matches').insert({ session_id:sessionId, player1_id:p1Id, player2_id:p2Id, score1, score2, format });
+  if (error) { showToast('Error: '+error.message,'error'); return; }
+  // DUPR update (ELO-based)
+  const p1 = allPlayers.find(p=>p.id===p1Id), p2 = allPlayers.find(p=>p.id===p2Id);
+  if (p1&&p2) {
+    const K=0.1, r1=parseFloat(p1.dupr_rating), r2=parseFloat(p2.dupr_rating);
+    const exp1 = 1/(1+Math.pow(10,(r2-r1)/4));
+    const a1 = score1>score2?1:0, a2=1-a1;
+    const n1 = Math.max(2,Math.min(6,r1+K*(a1-exp1)));
+    const n2 = Math.max(2,Math.min(6,r2+K*(a2-(1-exp1))));
+    await sb.from('players').update({dupr_rating:n1.toFixed(2),wins:(p1.wins||0)+(a1?1:0),losses:(p1.losses||0)+(a1?0:1)}).eq('id',p1Id);
+    await sb.from('players').update({dupr_rating:n2.toFixed(2),wins:(p2.wins||0)+(a2?1:0),losses:(p2.losses||0)+(a2?0:1)}).eq('id',p2Id);
+  }
+  showToast(currentLang==='mk'?'Резултатот е зачуван, DUPR ажуриран!':'Result saved, DUPR updated!','success');
+  document.getElementById('rScore1').value=''; document.getElementById('rScore2').value='';
+  await loadPlayers(); renderLeaderboard(); renderTournaments(); loadStats();
+}
+
+// ADMIN — LOCATIONS
+async function loadLocations() {
+  const { data } = await sb.from('locations').select('*').eq('active',true).order('name');
+  allLocations = data||[];
+}
+function renderLocationsAdmin() {
+  const el = document.getElementById('locationsList');
+  if (!allLocations.length) { el.innerHTML=`<div style="color:var(--muted);font-size:13px;margin-bottom:8px;"><span class="t-mk">Нема локации.</span><span class="t-en">No venues.</span></div>`; applyLang(); return; }
+  el.innerHTML = allLocations.map(l=>`<div class="loc-chip"><div class="loc-dot"></div>${l.name}${l.address?' — '+l.address:''}<span class="loc-remove" onclick="removeLocation('${l.id}')">×</span></div>`).join('');
+  applyLang();
+}
+async function addLocation() {
+  const name=document.getElementById('locName').value.trim(), address=document.getElementById('locAddress').value.trim();
+  if (!name) { showToast(currentLang==='mk'?'Внеси назив.':'Enter a name.','error'); return; }
+  const {error} = await sb.from('locations').insert({name,address});
+  if (error) { showToast('Error: '+error.message,'error'); return; }
+  showToast(currentLang==='mk'?'Локацијата е додадена!':'Venue added!','success');
+  document.getElementById('locName').value=''; document.getElementById('locAddress').value='';
+  await loadLocations(); renderLocationsAdmin(); populateSelects();
+}
+async function removeLocation(id) {
+  await sb.from('locations').update({active:false}).eq('id',id);
+  await loadLocations(); renderLocationsAdmin(); populateSelects();
+}
+
+// ADMIN — PLAYERS
+async function addPlayer() {
+  const name=document.getElementById('pName').value.trim();
+  const phone=document.getElementById('pPhone').value.trim();
+  const email=document.getElementById('pEmail').value.trim();
+  const dupr=parseFloat(document.getElementById('pDupr').value)||3.50;
+  if (!name) { showToast(currentLang==='mk'?'Внеси ime и презиме.':'Enter full name.','error'); return; }
+  const {error} = await sb.from('players').insert({full_name:name,phone,email,dupr_rating:dupr});
+  if (error) { showToast('Error: '+error.message,'error'); return; }
+  showToast(currentLang==='mk'?'Играчот е регистриран!':'Player registered!','success');
+  ['pName','pPhone','pEmail','pDupr'].forEach(id=>document.getElementById(id).value='');
+  await loadPlayers(); renderLeaderboard(); renderAdminPlayers(); loadStats(); populateSelects();
+}
+function renderAdminPlayers() {
+  const el=document.getElementById('adminPlayersList');
+  if (!allPlayers.length) { el.innerHTML=`<div class="empty-state" style="padding:16px;font-size:13px;"><span class="t-mk">Нема регистрирани играчи.</span><span class="t-en">No players yet.</span></div>`; applyLang(); return; }
+  el.innerHTML=`<div class="players-list">${allPlayers.map(p=>`<div class="player-row">
+    <div class="avatar">${p.full_name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase()}</div>
+    <div class="player-row-info"><div class="player-row-name">${p.full_name}</div><div class="player-row-sub">${[p.phone,p.email].filter(Boolean).join(' · ')}</div></div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--yellow);">${parseFloat(p.dupr_rating).toFixed(2)}</div>
+    <button class="btn btn-ghost btn-sm" onclick="removePlayer('${p.id}')">×</button>
+  </div>`).join('')}</div>`;
+  applyLang();
+}
+async function removePlayer(id) {
+  await sb.from('players').update({active:false}).eq('id',id);
+  await loadPlayers(); renderLeaderboard(); renderAdminPlayers(); loadStats(); populateSelects();
+}
+
+// SELECTS
+function populateSelects() {
+  document.getElementById('sLocation').innerHTML = `<option value="">— Избери / Select —</option>`+allLocations.map(l=>`<option value="${l.id}">${l.name}</option>`).join('');
+  document.getElementById('rSession').innerHTML = allSessions.map(s=>`<option value="${s.id}">${s.title} — ${s.date}</option>`).join('');
+  const opts = allPlayers.map(p=>`<option value="${p.id}">${p.full_name}</option>`).join('');
+  document.getElementById('rPlayer1').innerHTML = opts;
+  document.getElementById('rPlayer2').innerHTML = opts;
+}
+
+// UI
+function switchView(name, el) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  el.classList.add('active');
+}
+function setLang(lang) {
+  currentLang = lang;
+  document.body.className = 'lang-'+lang;
+  document.getElementById('btn-mk').classList.toggle('active', lang==='mk');
+  document.getElementById('btn-en').classList.toggle('active', lang==='en');
+}
+function applyLang() {}
+function showToast(msg, type='success') {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show '+type;
+  setTimeout(()=>t.className='toast',3500);
+}
+
+init();
+</script>
+</body>
+</html>
