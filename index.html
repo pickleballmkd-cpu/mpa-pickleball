@@ -2,6 +2,10 @@
 <html lang="mk">
 <head>
 <meta charset="UTF-8">
+<meta name="theme-color" content="#F5C200">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="MPA Skopje">
+<link rel="manifest" href="/manifest.json">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MPA Skopje — Macedonian Pickleball Association</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -114,7 +118,7 @@
   .player-name { font-weight: 500; font-size: 14px; }
   .player-sub { font-size: 11px; color: var(--muted); }
   .dupr-score { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--yellow); }
-  .avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; background: rgba(245,194,0,0.15); color: var(--yellow); }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; background: rgba(245,194,0,0.15); color: var(--yellow); overflow: hidden; }
 
   .t-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
   .t-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; background: rgba(204,31,31,0.06); }
@@ -178,8 +182,77 @@
   .reg-table td { padding: 8px 10px; border-bottom: 1px solid rgba(245,194,0,0.06); vertical-align: middle; }
   .reg-table tr:last-child td { border-bottom: none; }
 
+
+  /* MOBILE BOTTOM TABS */
+  .mobile-tabs { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--dark2); border-top: 1px solid var(--border); z-index: 99; padding: 6px 0 8px; }
+  .mobile-tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; color: var(--muted); font-family: "DM Sans", sans-serif; font-size: 10px; cursor: pointer; padding: 4px 0; transition: color 0.15s; }
+  .mobile-tab.active { color: var(--yellow); }
+  .mobile-tab-icon { font-size: 18px; line-height: 1; }
+  .btn-danger { background: rgba(255,92,92,0.1); color: var(--full); border: 1px solid rgba(255,92,92,0.2); }
+  .btn-danger:hover { background: rgba(255,92,92,0.2); }
+  .btn-xs { padding: 3px 8px; font-size: 11px; }
+  .session-actions { display: flex; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  @media (max-width: 480px) {
+    .mobile-tabs { display: flex; }
+    .main { padding-bottom: 80px; }
+    .nav-center { display: none; }
+    .season-badge { display: none; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 640px) {
+    .admin-grid { grid-template-columns: 1fr; }
+    .admin-card-full { grid-column: 1; }
+    .form-row-3 { grid-template-columns: 1fr; }
+    .signup-form-grid { grid-template-columns: 1fr; }
+  }
   ::-webkit-scrollbar { width: 4px; }
+
+  /* MOBILE BOTTOM TABS */
+  .mobile-tabs { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--dark2); border-top: 1px solid var(--border); z-index: 99; padding: 6px 0 8px; }
+  .mobile-tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; color: var(--muted); font-family: "DM Sans", sans-serif; font-size: 10px; cursor: pointer; padding: 4px 0; transition: color 0.15s; }
+  .mobile-tab.active { color: var(--yellow); }
+  .mobile-tab-icon { font-size: 18px; line-height: 1; }
+  .btn-danger { background: rgba(255,92,92,0.1); color: var(--full); border: 1px solid rgba(255,92,92,0.2); }
+  .btn-danger:hover { background: rgba(255,92,92,0.2); }
+  .btn-xs { padding: 3px 8px; font-size: 11px; }
+  .session-actions { display: flex; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  @media (max-width: 480px) {
+    .mobile-tabs { display: flex; }
+    .main { padding-bottom: 80px; }
+    .nav-center { display: none; }
+    .season-badge { display: none; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 640px) {
+    .admin-grid { grid-template-columns: 1fr; }
+    .admin-card-full { grid-column: 1; }
+    .form-row-3 { grid-template-columns: 1fr; }
+    .signup-form-grid { grid-template-columns: 1fr; }
+  }
   ::-webkit-scrollbar-track { background: var(--dark); }
+
+  /* MOBILE BOTTOM TABS */
+  .mobile-tabs { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--dark2); border-top: 1px solid var(--border); z-index: 99; padding: 6px 0 8px; }
+  .mobile-tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; color: var(--muted); font-family: "DM Sans", sans-serif; font-size: 10px; cursor: pointer; padding: 4px 0; transition: color 0.15s; }
+  .mobile-tab.active { color: var(--yellow); }
+  .mobile-tab-icon { font-size: 18px; line-height: 1; }
+  .btn-danger { background: rgba(255,92,92,0.1); color: var(--full); border: 1px solid rgba(255,92,92,0.2); }
+  .btn-danger:hover { background: rgba(255,92,92,0.2); }
+  .btn-xs { padding: 3px 8px; font-size: 11px; }
+  .session-actions { display: flex; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  @media (max-width: 480px) {
+    .mobile-tabs { display: flex; }
+    .main { padding-bottom: 80px; }
+    .nav-center { display: none; }
+    .season-badge { display: none; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 640px) {
+    .admin-grid { grid-template-columns: 1fr; }
+    .admin-card-full { grid-column: 1; }
+    .form-row-3 { grid-template-columns: 1fr; }
+    .signup-form-grid { grid-template-columns: 1fr; }
+  }
   ::-webkit-scrollbar-thumb { background: var(--dark3); border-radius: 2px; }
 
   @media (max-width: 640px) {
@@ -194,6 +267,39 @@
 </head>
 <body class="lang-mk">
 
+
+<!-- EDIT SESSION MODAL -->
+<div class="modal-overlay hidden" id="editModal">
+  <div class="modal-card" style="max-width:460px;">
+    <button class="modal-close" onclick="document.getElementById('editModal').classList.add('hidden')">×</button>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:16px;"><span class="t-mk">Уреди термин</span><span class="t-en">Edit session</span></div>
+    <input type="hidden" id="editId">
+    <div class="form-group"><label class="form-label"><span class="t-mk">Назив</span><span class="t-en">Title</span></label><input class="form-input" id="editTitle" type="text"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label"><span class="t-mk">Датум</span><span class="t-en">Date</span></label><input class="form-input" id="editDate" type="date"></div>
+      <div class="form-group"><label class="form-label"><span class="t-mk">Почеток</span><span class="t-en">Start</span></label><input class="form-input" id="editStart" type="time"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label"><span class="t-mk">Крај</span><span class="t-en">End</span></label><input class="form-input" id="editEnd" type="time"></div>
+      <div class="form-group"><label class="form-label"><span class="t-mk">Макс. играчи</span><span class="t-en">Max players</span></label><input class="form-input" id="editMax" type="number" min="2"></div>
+    </div>
+    <div class="form-group"><label class="form-label"><span class="t-mk">Локација</span><span class="t-en">Venue</span></label><select class="form-input" id="editLocation"></select></div>
+    <div class="form-group"><label class="form-label"><span class="t-mk">Формат</span><span class="t-en">Format</span></label>
+      <select class="form-input" id="editFormat">
+        <option value="Doubles">Doubles</option><option value="Singles">Singles</option>
+        <option value="Mixed doubles">Mixed doubles</option><option value="Сите формати">Сите формати / All formats</option>
+      </select>
+    </div>
+    <div class="form-group" style="display:flex;align-items:center;gap:10px;">
+      <input type="checkbox" id="editIsTournament" style="accent-color:var(--yellow);width:16px;height:16px;">
+      <label for="editIsTournament" style="font-size:13px;color:var(--muted);cursor:pointer;"><span class="t-mk">Ова е турнир</span><span class="t-en">This is a tournament</span></label>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button class="btn btn-yellow" style="flex:1;justify-content:center;" onclick="saveEditSession()"><span class="t-mk">Зачувај</span><span class="t-en">Save</span></button>
+      <button class="btn btn-ghost" onclick="document.getElementById('editModal').classList.add('hidden')"><span class="t-mk">Откажи</span><span class="t-en">Cancel</span></button>
+    </div>
+  </div>
+</div>
 <!-- LOGIN MODAL -->
 <div class="modal-overlay hidden" id="loginModal">
   <div class="modal-card">
@@ -422,7 +528,7 @@
         <h3><span class="t-mk">Регистрирај играч</span><span class="t-en">Register player</span></h3>
         <div class="form-row-3">
           <div class="form-group" style="margin:0;">
-            <label class="form-label"><span class="t-mk">Ime и презиме</span><span class="t-en">Full name</span></label>
+            <label class="form-label"><span class="t-mk">Име и презиме</span><span class="t-en">Full name</span></label>
             <input class="form-input" id="pName" type="text" placeholder="Марко Андоновски">
           </div>
           <div class="form-group" style="margin:0;">
@@ -450,9 +556,29 @@
   </div>
 
 </div>
+
+<div class="mobile-tabs" id="mobileTabs">
+  <button class="mobile-tab active" onclick="switchView('calendar',this);syncMobile(0)">
+    <span class="mobile-tab-icon">📅</span>
+    <span class="t-mk">Термини</span><span class="t-en">Schedule</span>
+  </button>
+  <button class="mobile-tab" onclick="switchView('leaderboard',this);syncMobile(1)">
+    <span class="mobile-tab-icon">🏆</span>
+    <span class="t-mk">Ранг</span><span class="t-en">Rank</span>
+  </button>
+  <button class="mobile-tab" onclick="switchView('tournaments',this);syncMobile(2)">
+    <span class="mobile-tab-icon">🎾</span>
+    <span class="t-mk">Турнири</span><span class="t-en">Tourn.</span>
+  </button>
+  <button class="mobile-tab" id="mobileAdminTab" onclick="switchView('admin',this);syncMobile(3)" style="display:none;">
+    <span class="mobile-tab-icon">⚙️</span>
+    <span class="t-mk">Админ</span><span class="t-en">Admin</span>
+  </button>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
 const SUPABASE_URL = 'https://btapuwyffybimkcswkep.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0YXB1d3lmZnliaW1rY3N3a2VwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NTY0MTgsImV4cCI6MjA4OTIzMjQxOH0.UBEl_VrcULon-mGRclINzKCDHkIBeZlM32eOOxcuzKY';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -595,7 +721,7 @@ function renderSessions() {
       </div>
       <div class="signup-form" id="form-${s.id}">
         <div class="signup-form-grid">
-          <input type="text" id="reg-name-${s.id}" placeholder="${currentLang==='mk'?'Ime и презиме':'Full name'} *">
+          <input type="text" id="reg-name-${s.id}" placeholder="${currentLang==='mk'?'Име и презиме':'Full name'} *">
           <input type="text" id="reg-phone-${s.id}" placeholder="${currentLang==='mk'?'Телефон (Вибер)':'Phone (Viber)'} *">
           <input type="email" id="reg-email-${s.id}" placeholder="Email *">
           <div style="display:flex;gap:8px;align-items:center;">
@@ -660,7 +786,7 @@ function renderLeaderboard() {
   }).join('');
   el.innerHTML = `<table class="lb-table"><thead><tr>
     <th>#</th><th><span class="t-mk">Играч</span><span class="t-en">Player</span></th>
-    <th>DUPR</th><th><span class="t-mk">В/П</span><span class="t-en">W/L</span></th>
+    <th>DUPR</th><th><span class="t-mk">Победи / Порази</span><span class="t-en">Win / Loss</span></th>
     <th><span class="t-mk">Вкупно</span><span class="t-en">Total</span></th>
   </tr></thead><tbody>${rows}</tbody></table>`;
   applyLang();
@@ -740,7 +866,7 @@ async function loadRegistrantsForSession(sessionId) {
   <table class="reg-table">
     <thead><tr>
       <th>#</th>
-      <th><span class="t-mk">Ime и презиме</span><span class="t-en">Full name</span></th>
+      <th><span class="t-mk">Име и презиме</span><span class="t-en">Full name</span></th>
       <th><span class="t-mk">Телефон</span><span class="t-en">Phone</span></th>
       <th>Email</th>
       <th><span class="t-mk">Пријавен</span><span class="t-en">Registered at</span></th>
