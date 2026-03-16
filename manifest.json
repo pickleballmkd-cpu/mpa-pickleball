@@ -1,0 +1,14 @@
+{
+  "name": "MPA Skopje — Macedonian Pickleball",
+  "short_name": "MPA Skopje",
+  "description": "Macedonian Pickleball Association — Skopje",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#100A0A",
+  "theme_color": "#F5C200",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "logo.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "logo.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
